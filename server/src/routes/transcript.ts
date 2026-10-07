@@ -18,7 +18,7 @@ transcriptRouter.post('/process', authMiddleware, requireRole(['ADMIN']), async 
     const draft = await extractProjectsFromTranscript(transcript);
 
     // 2. Validate extracted draft
-    const validation = validateDraft(draft);
+    const validation = await validateDraft(draft);
     if (!validation.valid) {
       res.status(400).json({
         error: 'AI extraction contained validation issues',
@@ -28,7 +28,7 @@ transcriptRouter.post('/process', authMiddleware, requireRole(['ADMIN']), async 
     }
 
     // 3. Atomically persist projects and tasks
-    const saveResult = saveDraftTransaction(draft);
+    const saveResult = await saveDraftTransaction(draft);
 
     res.json({
       success: true,
@@ -64,7 +64,7 @@ transcriptRouter.post('/preview', authMiddleware, requireRole(['ADMIN']), async 
 
   try {
     const draft = await extractProjectsFromTranscript(transcript);
-    const validation = validateDraft(draft);
+    const validation = await validateDraft(draft);
 
     res.json({
       draft,

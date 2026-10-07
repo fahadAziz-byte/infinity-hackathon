@@ -1,5 +1,8 @@
 import bcrypt from 'bcryptjs';
-import { db, initDatabase } from './index.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+import { initDatabase, getOne, execute } from './index.js';
 
 export interface DemoUser {
   id: string;
@@ -94,40 +97,32 @@ export const DEMO_USERS: DemoUser[] = [
 ];
 
 export async function seedDemoUsers() {
-  initDatabase();
+  await initDatabase();
   const passwordHash = await bcrypt.hash('Demo123!', 10);
 
-  const checkStmt = db.prepare('SELECT id FROM users WHERE email = ?');
-  const insertStmt = db.prepare(`
-    INSERT INTO users (id, name, email, passwordHash, role, specialization, skills)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
-  const updateStmt = db.prepare(`
-    UPDATE users SET name = ?, passwordHash = ?, role = ?, specialization = ?, skills = ?
-    WHERE email = ?
-  `);
+  let insertedCount = 0;
+  let updatedCount = 0;
 
-  const runSeed = db.transaction(() => {
-    let insertedCount = 0;
-    let updatedCount = 0;
+  for (const user of DEMO_USERS) {
+    const existing = await getOne<{ id: string }>('SELECT id FROM users WHERE email = ?', [user.email]);
+    const skillsStr = JSON.stringify(user.skills);
 
-    for (const user of DEMO_USERS) {
-      const existing = checkStmt.get(user.email) as { id: string } | undefined;
-      const skillsStr = JSON.stringify(user.skills);
-
-      if (existing) {
-        updateStmt.run(user.name, passwordHash, user.role, user.specialization, skillsStr, user.email);
-        updatedCount++;
-      } else {
-        insertStmt.run(user.id, user.name, user.email, passwordHash, user.role, user.specialization, skillsStr);
-        insertedCount++;
-      }
+    if (existing) {
+      await execute(
+        'UPDATE users SET name = ?, passwordHash = ?, role = ?, specialization = ?, skills = ? WHERE email = ?',
+        [user.name, passwordHash, user.role, user.specialization, skillsStr, user.email]
+      );
+      updatedCount++;
+    } else {
+      await execute(
+        'INSERT INTO users (id, name, email, passwordHash, role, specialization, skills) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [user.id, user.name, user.email, passwordHash, user.role, user.specialization, skillsStr]
+      );
+      insertedCount++;
     }
-    return { insertedCount, updatedCount };
-  });
+  }
 
-  const result = runSeed();
-  console.log(`Seeding complete. Inserted: ${result.insertedCount}, Updated: ${result.updatedCount}, Total: 10`);
+  console.log(`Seeding complete. Inserted: ${insertedCount}, Updated: ${updatedCount}, Total: 10`);
 }
 
 // Execute directly if run as a script

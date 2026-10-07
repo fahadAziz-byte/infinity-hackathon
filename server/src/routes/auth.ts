@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/index.js';
+import { getOne } from '../db/index.js';
 import { JWT_SECRET, authMiddleware, AuthenticatedRequest } from '../middleware/auth.js';
 
 export const authRouter = Router();
@@ -14,15 +14,14 @@ authRouter.post('/login', async (req, res) => {
     return;
   }
 
-  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-  const user = stmt.get(email) as any;
+  const user = await getOne<any>('SELECT * FROM users WHERE email = ?', [email]);
 
   if (!user) {
     res.status(401).json({ error: 'Invalid email or password' });
     return;
   }
 
-  const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+  const passwordMatch = await bcrypt.compare(password, user.passwordHash || user.passwordhash);
   if (!passwordMatch) {
     res.status(401).json({ error: 'Invalid email or password' });
     return;
@@ -40,7 +39,7 @@ authRouter.post('/login', async (req, res) => {
       email: user.email,
       role: user.role,
       specialization: user.specialization,
-      skills: user.skills ? JSON.parse(user.skills) : []
+      skills: user.skills ? (typeof user.skills === 'string' ? JSON.parse(user.skills) : user.skills) : []
     }
   });
 });

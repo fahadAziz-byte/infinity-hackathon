@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/index.js';
+import { getOne } from '../db/index.js';
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'novaworks-super-secret-key-2026';
 
@@ -17,7 +17,7 @@ export interface AuthenticatedRequest extends Request {
   user?: AuthUser;
 }
 
-export function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
@@ -27,8 +27,10 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
-    const stmt = db.prepare('SELECT id, name, email, role, specialization, skills FROM users WHERE id = ?');
-    const user = stmt.get(decoded.id) as any;
+    const user = await getOne<any>(
+      'SELECT id, name, email, role, specialization, skills FROM users WHERE id = ?',
+      [decoded.id]
+    );
 
     if (!user) {
       res.status(401).json({ error: 'Unauthorized: User not found' });
@@ -41,7 +43,7 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
       email: user.email,
       role: user.role,
       specialization: user.specialization,
-      skills: user.skills ? JSON.parse(user.skills) : []
+      skills: user.skills ? (typeof user.skills === 'string' ? JSON.parse(user.skills) : user.skills) : []
     };
     next();
   } catch (err) {
