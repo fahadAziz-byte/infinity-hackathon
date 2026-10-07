@@ -11,7 +11,7 @@ The Infinity Hack '26 &bull; Simplified Student Challenge Pack MVP
   - **M2 (Backend Developer):** Express API logic, SQLite schema & migrations, authentication & RBAC middleware.
   - **M3 (AI / Integration Developer):** LLM prompt engineering, structured JSON extraction, meeting timeline correction logic, validation pipeline.
   - **M4 (Product & Full-Stack Developer):** End-to-end integration, automated test suites, seeder script, documentation.
-- **Repository:** https://github.com/your-username/novaworks-crm
+- **Repository:** https://github.com/fahadAziz-byte/infinity-hackathon.git
 
 ---
 
