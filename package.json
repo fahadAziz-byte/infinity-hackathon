@@ -1,0 +1,13 @@
+{
+  "name": "novaworks-crm-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "seed": "npm --prefix server run seed",
+    "test:auth": "npm --prefix server run test:auth",
+    "test:ai": "npm --prefix server run test:ai",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev"
+  }
+}
