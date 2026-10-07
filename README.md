@@ -43,8 +43,9 @@ The Infinity Hack '26 &bull; Simplified Student Challenge Pack MVP
 
 ---
 
-## Links
-- **Live application:** Local only (or paste your deployed Vercel/Render URL here)
+- **Live application:** [Your Vercel URL will go here]
+- **Backend API:** https://infinity-hackathon.onrender.com
+- **Database:** Hosted PostgreSQL on Neon.tech (Aiven/Neon cloud compatible)
 - **Demo video:** [accessible recording URL]
 
 ---
