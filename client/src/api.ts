@@ -1,8 +1,9 @@
 import { User, Project, Task } from './types';
 
-const API_BASE = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api` 
-  : (import.meta.env.PROD ? 'https://infinity-hackathon.onrender.com/api' : '/api');
+const metaEnv = (import.meta as any).env || {};
+const API_BASE = metaEnv.VITE_API_URL 
+  ? `${metaEnv.VITE_API_URL.replace(/\/$/, '')}/api` 
+  : (metaEnv.PROD ? 'https://infinity-hackathon.onrender.com/api' : '/api');
 
 export function getStoredToken(): string | null {
   return localStorage.getItem('novaworks_token');
